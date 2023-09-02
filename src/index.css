@@ -2,7 +2,7 @@
   background: #fff;
   border: 1px solid #999;
   float: left;
-  font-size: 42px;
+  font-size: 56px;
   font-weight: bold;
   line-height: 34px;
   height: 34px;
@@ -24,4 +24,13 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 10px;
+}
+
+.game {
+  display: flex;
+  flex-direction: row;
+}
+
+.game-info {
+  margin-left: 20px;
 }

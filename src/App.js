@@ -9,47 +9,39 @@ function Square({ value, onSquareClick }) {
   );
 }
 
-/** board component as the main component of App.js */
-export default function Board() {
-  /** create squares array with 9 element and filled with null values */
-  const [squares, setSquares] = useState(Array(9).fill(null));
+/** board component */
+function Board({ xIsNext, squares, onPlay }) {
+  /** this function created for handling the square buttons */
+  function handleClick(i) {
+    /** checking there is a winner and checking if the current square is not null / has been filled? */
+    if (calculateWinner(squares) || squares[i]) {
+      return;
+    }
 
-  /** state for checking the next player turn */
-  const [xIsNext, setXIsNext] = useState(true);
+    /** copying the current squares to new array nextSquares */
+    const nextSquares = squares.slice();
+
+    /** checking xIsNext for giving the value to nextSquares[i] */
+    if (xIsNext) {
+      nextSquares[i] = "X";
+    } else {
+      nextSquares[i] = "O";
+    }
+
+    onPlay(nextSquares);
+  }
 
   /** state for checking the winner */
   const winner = calculateWinner(squares);
   let status;
 
+  /** checking is winner is exist? */
   if (winner) {
+    /** showing the winner */
     status = "Winner: " + winner;
   } else {
+    /** showing the next player turn */
     status = "Next player: " + (xIsNext ? "X" : "O");
-  }
-
-  /** handling function after click the buttons */
-  function handleClick(index) {
-    /** avoid multiple click in a button and checking the winner */
-    if (squares[index] || calculateWinner(squares)) {
-      return;
-    }
-
-    /** copy squares array to new variable named nextSquares using slice method */
-    const nextSquares = squares.slice();
-
-    /** checking the next turn is 'X' or 'O' */
-    if (xIsNext) {
-      /** set the value of given index to "X" */
-      nextSquares[index] = "X";
-    } else {
-      /** set the value of given index to "O" */
-      nextSquares[index] = "O";
-    }
-
-    /** finally set the squares state value with nextSquares */
-    setSquares(nextSquares);
-
-    setXIsNext(!xIsNext);
   }
 
   return (
@@ -71,6 +63,70 @@ export default function Board() {
         <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
       </div>
     </>
+  );
+}
+
+export default function Game() {
+  /** create array of array with 9 element and filled with null values */
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+
+  /** state for checking the next player turn */
+  const [xIsNext, setXIsNext] = useState(true);
+
+  /** state for detect the current move of player */
+  const [currentMove, setCurrentMove] = useState(0);
+
+  /** set default value currentSquares = currentMove */
+  const currentSquares = history[currentMove];
+
+  function handlePlay(nextSquares) {
+    /** merge history and nextSquares array, then make it the new history value*/
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+
+    /** set history with new data */
+    setHistory(nextHistory);
+
+    /** set current move based on nextHistory.length - 1 */
+    setCurrentMove(nextHistory.length - 1);
+
+    /** changing the next turn */
+    setXIsNext(!xIsNext);
+  }
+
+  function jumpTo(nextMove) {
+    /** adjust currentMove based on nextMove props */
+    setCurrentMove(nextMove);
+
+    /** adjust next turn based on nextMove props */
+    setXIsNext(nextMove % 2 === 0);
+  }
+
+  const moves = history.map((squares, move) => {
+    let description;
+
+    /** checking move key */
+    if (move > 0) {
+      description = "Go to move #" + move;
+    } else {
+      description = "Go to game start";
+    }
+
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
   );
 }
 
